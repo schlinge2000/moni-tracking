@@ -1,0 +1,271 @@
+{
+  "_hinweis": "Zuordnung Kalender -> MONI-Projekt/Position -> Odoo. Kunden-Einordnung (Bestand vs. Interessent) ist ein Startvorschlag - bitte pruefen. odoo_project/odoo_task an die Namen in Odoo anpassen.",
+  "day": {
+    "default_start_hour": 6,
+    "hours_per_day": 8.0,
+    "max_hours_per_day": 10.0,
+    "break_start": "12:00",
+    "break_minutes": 30,
+    "round_to_hours": 0.5
+  },
+  "activities": {
+    "pm": {
+      "moni": "19426-0000",
+      "label": "Produktmanagement Demand AI",
+      "odoo_project": "19426 Produktmanagement Demand AI",
+      "odoo_task": ""
+    },
+    "mt": {
+      "moni": "10441-0000",
+      "label": "Meeting Team Demand AI",
+      "odoo_project": "10441 Meeting Team Demand AI",
+      "odoo_task": ""
+    },
+    "vt": {
+      "moni": "10469-0000",
+      "label": "Vertriebsunterstuetzung Demand AI",
+      "odoo_project": "10469 Vertriebsunterstuetzung Demand AI",
+      "odoo_task": ""
+    },
+    "cs": {
+      "moni": "10442-0000",
+      "label": "Customer Success Demand AI",
+      "odoo_project": "10442 Customer Success Demand AI",
+      "odoo_task": ""
+    },
+    "urlaub": {
+      "moni": "10030-0000",
+      "label": "Urlaub",
+      "odoo_project": "10030 Urlaub",
+      "odoo_task": ""
+    },
+    "krank": {
+      "moni": "10020-0000",
+      "label": "Krankheit/Arztbesuch",
+      "odoo_project": "10020 Krankheit/Arztbesuch",
+      "odoo_task": ""
+    }
+  },
+  "default_activity": "pm",
+  "internal_domains": [
+    "inform-software.com",
+    "inform-software.de",
+    "inform-ac.com"
+  ],
+  "customers": [
+    {
+      "name": "Metten",
+      "match": [
+        "metten"
+      ],
+      "activity": "cs"
+    },
+    {
+      "name": "Schaeferbarthold",
+      "match": [
+        "schaeferbarthold",
+        "schäferbarthold"
+      ],
+      "activity": "cs"
+    },
+    {
+      "name": "Schaefflertech",
+      "match": [
+        "schaefflertech",
+        "schäfflertech"
+      ],
+      "activity": "cs"
+    },
+    {
+      "name": "Weiling",
+      "match": [
+        "weiling"
+      ],
+      "activity": "cs"
+    },
+    {
+      "name": "Emmi",
+      "match": [
+        "emmi"
+      ],
+      "activity": "cs"
+    },
+    {
+      "name": "Fath",
+      "match": [
+        "fath"
+      ],
+      "activity": "cs"
+    },
+    {
+      "name": "Fernholz",
+      "match": [
+        "fernholz"
+      ],
+      "activity": "vt"
+    },
+    {
+      "name": "Nutwork",
+      "match": [
+        "nutwork"
+      ],
+      "activity": "vt"
+    },
+    {
+      "name": "KTM",
+      "match": [
+        "ktm",
+        "allzeitbevorratung"
+      ],
+      "activity": "vt"
+    },
+    {
+      "name": "Griesson-de Beukelaer",
+      "match": [
+        "griesson",
+        "beukelaer"
+      ],
+      "activity": "vt"
+    },
+    {
+      "name": "Pilatus",
+      "match": [
+        "pilatus"
+      ],
+      "activity": "vt"
+    },
+    {
+      "name": "EDEKA",
+      "match": [
+        "edeka",
+        "edk/"
+      ],
+      "activity": "vt"
+    },
+    {
+      "name": "Baumit",
+      "match": [
+        "baumit"
+      ],
+      "activity": "vt"
+    },
+    {
+      "name": "febi",
+      "match": [
+        "febi"
+      ],
+      "activity": "vt"
+    },
+    {
+      "name": "Klaus Faber",
+      "match": [
+        "klaus faber"
+      ],
+      "activity": "vt"
+    },
+    {
+      "name": "Raimund Beck",
+      "match": [
+        "raimund beck"
+      ],
+      "activity": "vt"
+    },
+    {
+      "name": "Estella",
+      "match": [
+        "estella"
+      ],
+      "activity": "vt"
+    },
+    {
+      "name": "GWS",
+      "match": [
+        "gws"
+      ],
+      "activity": "vt"
+    },
+    {
+      "name": "SSC",
+      "match": [
+        "ssc |",
+        "ssc|"
+      ],
+      "activity": "vt"
+    },
+    {
+      "name": "HDM Australia",
+      "match": [
+        "hdm"
+      ],
+      "activity": "vt"
+    },
+    {
+      "name": "ADDONE",
+      "match": [
+        "addone"
+      ],
+      "activity": "vt"
+    }
+  ],
+  "subject_rules": [
+    {
+      "match": [
+        "urlaub",
+        "vacation",
+        "abwesend"
+      ],
+      "activity": "urlaub",
+      "whole_day": true
+    },
+    {
+      "match": [
+        "krank",
+        "arzt"
+      ],
+      "activity": "krank",
+      "whole_day": true
+    },
+    {
+      "match": [
+        "customer success",
+        "prognose-sprechstunde",
+        "cs unterstützung"
+      ],
+      "activity": "cs"
+    },
+    {
+      "match": [
+        "daily",
+        "standup",
+        "jour fixe",
+        "teammeeting",
+        "team meeting",
+        "retro",
+        "sprint-review",
+        "sprint review",
+        "newscast weekly",
+        "newscast planning",
+        "planning demand ai",
+        "pm weekly"
+      ],
+      "activity": "mt"
+    }
+  ],
+  "unknown_external_activity": "vt",
+  "ignore_subjects": [
+    "blocker",
+    "keine termine möglich",
+    "fokuszeit",
+    "focus time",
+    "mittag",
+    "lunch",
+    "privat",
+    "schule",
+    "physio",
+    "awgc",
+    "golf",
+    "canceled:",
+    "abgesagt:",
+    "monlist"
+  ]
+}

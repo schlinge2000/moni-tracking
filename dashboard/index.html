@@ -1,0 +1,408 @@
+<meta name="dash-one-writer">
+<style>
+  .az { display: flex; flex-direction: column; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); }
+  .az-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; }
+  .az-lead { color: var(--color-fg-muted); margin: var(--cds-gap-xs) 0 0; }
+  .az-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--cds-gap-md); }
+  .az-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); }
+  .az-card h3 { margin: 0; font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); }
+  .az-big { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: 2rem; font-variant-numeric: tabular-nums; margin: var(--cds-gap-xs) 0; }
+  .az-sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0; }
+  .az-warn { color: var(--color-warn); }
+  .az-section h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0 0 var(--cds-gap-xs); }
+  .az-section p.az-note { margin: 0 0 var(--cds-gap-sm); color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+  .az-chart { position: relative; min-height: 280px; }
+  .az-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--cds-text-secondary); margin-top: var(--cds-gap-sm); }
+  .az-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .az-legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .az-toggle { display: flex; gap: var(--cds-gap-xs); margin-bottom: var(--cds-gap-sm); }
+  .az-toggle button { font: inherit; font-size: var(--cds-font-size-caption); padding: 4px 10px; border-radius: var(--cds-radius); border: 1px solid var(--color-border-line); background: var(--color-bg); color: var(--color-fg); cursor: pointer; }
+  .az-toggle button.az-on { background: var(--color-panel); font-weight: var(--cds-font-weight-medium); }
+  .az-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); box-shadow: var(--cds-shadow-popover); border-radius: var(--cds-radius); padding: 8px 10px; font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 2; }
+  .az-tip b { display: block; margin-bottom: 2px; }
+  .az-chart .tick text { fill: var(--cds-text-secondary); font-size: var(--cds-font-size-caption); font-family: var(--font-anthropic-sans); }
+  .az-chart .domain, .az-chart .tick line { stroke: var(--cds-chart-axis); }
+  .az-wrap { overflow-x: auto; }
+  .az-table { border-collapse: collapse; width: 100%; font-size: var(--cds-font-size-body); font-variant-numeric: tabular-nums; }
+  .az-table th, .az-table td { text-align: right; padding: 6px 10px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+  .az-table th:first-child, .az-table td:first-child, .az-table .az-l { text-align: left; }
+  .az-table th { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-weight: var(--cds-font-weight-medium); }
+  .az-table td.az-desc { white-space: normal; min-width: 220px; }
+  .az-badge { font-size: var(--cds-font-size-caption); padding: 1px 6px; border-radius: 999px; border: 1px solid var(--color-border-line); }
+  .az-badge.az-open { color: var(--color-warn); border-color: currentColor; }
+  [data-dash-source-state=refreshing] { opacity: .5; }
+</style>
+
+<div class="az">
+  <header id="kopf">
+    <h1 class="az-title">Arbeitszeiten</h1>
+    <p class="az-lead">Stand <span data-draw="stand" data-source="kpi" data-field="stand" data-row="0">—</span>. Noch nicht in MONI übernommen: <span data-draw="offenTage" data-source="kpi" data-field="offen_tage" data-row="0">—</span> Arbeitstage ab <span data-draw="offenAb" data-source="kpi" data-field="offen_ab" data-row="0">—</span>.</p>
+  </header>
+
+  <section class="az-tiles" id="kennzahlen">
+    <div class="az-card" id="kachel-woche">
+      <h3>Diese Woche</h3>
+      <div class="az-big"><span data-draw="wocheIst" data-source="kpi" data-field="woche_ist" data-row="0">—</span> h</div>
+      <p class="az-sub"><span data-draw="wocheLabel" data-source="kpi" data-field="woche_label" data-row="0">—</span> · Soll 8 h je Arbeitstag</p>
+    </div>
+    <div class="az-card" id="kachel-monat">
+      <h3>Dieser Monat</h3>
+      <div class="az-big"><span data-draw="monatIst" data-source="kpi" data-field="monat_ist" data-row="0">—</span> h</div>
+      <p class="az-sub"><span data-draw="monatLabel" data-source="kpi" data-field="monat_label" data-row="0">—</span></p>
+    </div>
+    <div class="az-card" id="kachel-offen">
+      <h3>Offen für MONI / Odoo</h3>
+      <div class="az-big az-warn"><span data-draw="offenStd" data-source="kpi" data-field="offen_stunden" data-row="0">—</span> h</div>
+      <p class="az-sub">Vorschläge aus Kalender und Wiki, noch zu prüfen</p>
+    </div>
+    <div class="az-card" id="kachel-abwesend">
+      <h3>Abwesend <span data-draw="jahr" data-source="kpi" data-field="jahr" data-row="0">—</span></h3>
+      <div class="az-big"><span data-draw="urlaub" data-source="kpi" data-field="urlaub_tage" data-row="0">—</span> Tage Urlaub</div>
+      <p class="az-sub"><span data-draw="krank" data-source="kpi" data-field="krank_tage" data-row="0">—</span> Tage krank</p>
+    </div>
+  </section>
+
+  <section class="az-section" id="wochen">
+    <h2>Stunden nach Tätigkeit</h2>
+    <p class="az-note">Volle Balken sind in MONI gebucht, blasse Balken sind Vorschläge aus Kalender und Wiki. Ziehen verschiebt nach links und rechts, Mausrad oder Pinch zoomt. Ab einem Ausschnitt von rund 10 Wochen zeigt der Chart einzelne Tage statt Wochen.</p>
+    <div class="az-toggle" role="group" aria-label="Zeitraum">
+      <button type="button" data-preset="d28">4 Wochen (Tage)</button>
+      <button type="button" class="az-on" data-preset="w26">26 Wochen</button>
+      <button type="button" data-preset="all">Alles</button>
+    </div>
+    <div class="az-chart" data-draw="wochenChart" data-source="weekly daily"></div>
+    <div class="az-legend">
+      <span><i></i>Produktmanagement</span>
+      <span><i></i>Meeting Team</span>
+      <span><i></i>Vertriebsunterstützung</span>
+      <span><i></i>Customer Success</span>
+      <span><i></i>Urlaub</span>
+      <span><i></i>Krankheit</span>
+    </div>
+  </section>
+
+  <section class="az-section" id="woche-detail">
+    <h2>Buchungen der letzten Woche</h2>
+    <p class="az-note">So würden die Zeilen in MONI bzw. Odoo landen.</p>
+    <div class="az-wrap">
+      <table class="az-table" data-source="woche" data-row-key="key">
+        <thead><tr><th data-field="datum">Tag</th><th data-field="taetigkeit" class="az-l">Tätigkeit</th><th data-field="stunden">Std.</th><th data-field="beschreibung" class="az-l">Beschreibung</th></tr></thead>
+        <tbody data-draw="wocheRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="az-section" id="monate">
+    <h2>Monate</h2>
+    <div class="az-wrap">
+      <table class="az-table" data-source="monthly" data-row-key="monat">
+        <thead><tr><th data-field="monat">Monat</th><th data-field="status" class="az-l">Status</th><th data-field="pm">PM</th><th data-field="mt">Team</th><th data-field="vt">Vertrieb</th><th data-field="cs">CS</th><th data-field="urlaub">Urlaub</th><th data-field="krank">Krank</th><th data-field="summe">Summe</th></tr></thead>
+        <tbody data-draw="monatRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="az-section" id="kunden">
+    <h2>Kundentermine</h2>
+    <p class="az-note">Termine, die einem Kunden zugeordnet wurden (Betreff, Ort oder Teilnehmer-Domain).</p>
+    <div class="az-wrap">
+      <table class="az-table" data-source="kunden" data-row-key="kunde">
+        <thead><tr><th data-field="kunde">Kunde</th><th data-field="termine">Termine</th><th data-field="stunden">Std.</th><th data-field="letzter">Zuletzt</th></tr></thead>
+        <tbody data-draw="kundenRows"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script>
+  window.AZ = {
+    acts: [
+      ['19426', 'Produktmanagement'], ['10441', 'Meeting Team'], ['10469', 'Vertriebsunterstützung'],
+      ['10442', 'Customer Success'], ['10030', 'Urlaub'], ['10020', 'Krankheit']
+    ],
+    preset: 'w26',
+    presetSeq: 1,
+    parse: d3.utcParse('%Y-%m-%d'),
+    fmtDay: d3.utcFormat('%a %d.%m.'),
+    fmtDate: d3.utcFormat('%d.%m.%Y'),
+    fmtMonth: d3.utcFormat('%B %Y'),
+    num: (x) => d3.format(',.1~f')(x).replace(/,/g, 'X').replace(/\./g, ',').replace(/X/g, '.'),
+    isoWeek(d) {
+      const t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+      const day = (t.getUTCDay() + 6) % 7; t.setUTCDate(t.getUTCDate() - day + 3);
+      const y = t.getUTCFullYear(); const jan4 = new Date(Date.UTC(y, 0, 4));
+      const w = 1 + Math.round(((t - jan4) / 864e5 - 3 + ((jan4.getUTCDay() + 6) % 7)) / 7);
+      return { y, w, monday: d3.utcDay.offset(d, -((d.getUTCDay() + 6) % 7)) };
+    }
+  };
+  AZ.locale = d3.timeFormatLocale({ dateTime: '%A, %e. %B %Y, %X', date: '%d.%m.%Y', time: '%H:%M:%S', periods: ['', ''],
+    days: ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'], shortDays: ['So','Mo','Di','Mi','Do','Fr','Sa'],
+    months: ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
+    shortMonths: ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'] });
+  AZ.fmtDay = AZ.locale.utcFormat('%a %d.%m.');
+  AZ.fmtMonth = AZ.locale.utcFormat('%B %Y');
+  AZ.fmtShort = AZ.locale.utcFormat('%d.%m.');
+  AZ.fmtTick = AZ.locale.utcFormat('%b %y');
+</script>
+
+<script>
+  dash.calc('weekly', {
+    title: 'Stunden pro Woche und Tätigkeit',
+    description: 'Summe der Stunden je ISO-Woche, Tätigkeit (Projekt) und Status (gebucht/Vorschlag).',
+    inputs: ['zeiten'],
+    fn: (zeiten) => {
+      const m = new Map();
+      for (const r of zeiten) {
+        const d = AZ.parse(r.datum); const wk = AZ.isoWeek(d);
+        const key = `${wk.y}-W${String(wk.w).padStart(2, '0')}|${r.projekt}|${r.status}`;
+        const o = m.get(key) || { woche: `${wk.y}-W${String(wk.w).padStart(2, '0')}`, montag: d3.utcFormat('%Y-%m-%d')(wk.monday), projekt: r.projekt, status: r.status, stunden: 0 };
+        o.stunden += +r.stunden; m.set(key, o);
+      }
+      return [...m.values()].sort((a, b) => a.montag < b.montag ? -1 : 1);
+    }
+  });
+
+  dash.calc('daily', {
+    title: 'Stunden pro Tag und Tätigkeit',
+    description: 'Summe der Stunden je Tag, Tätigkeit (Projekt) und Status (gebucht/Vorschlag).',
+    inputs: ['zeiten'],
+    fn: (zeiten) => {
+      const m = new Map();
+      for (const r of zeiten) {
+        const k = `${r.datum}|${r.projekt}|${r.status}`;
+        const o = m.get(k) || { datum: r.datum, projekt: r.projekt, status: r.status, stunden: 0 };
+        o.stunden += +r.stunden; m.set(k, o);
+      }
+      return [...m.values()].sort((a, b) => a.datum < b.datum ? -1 : 1);
+    }
+  });
+
+  dash.calc('kpi', {
+    title: 'Kennzahlen',
+    description: 'Letzte Woche und letzter Monat mit Daten, offene Vorschläge, Urlaubs- und Krankheitstage im laufenden Jahr (8 h = 1 Tag).',
+    inputs: ['zeiten'],
+    fn: (zeiten) => {
+      if (!zeiten.length) return [];
+      const last = d3.max(zeiten, (r) => r.datum); const d = AZ.parse(last); const wk = AZ.isoWeek(d);
+      const mon = d3.utcFormat('%Y-%m-%d')(wk.monday); const ym = last.slice(0, 7); const y = last.slice(0, 4);
+      const sum = (f) => d3.sum(zeiten.filter(f), (r) => +r.stunden);
+      const offen = zeiten.filter((r) => r.status === 'vorschlag' && !['10030', '10020'].includes(r.projekt));
+      const offenAlle = zeiten.filter((r) => r.status === 'vorschlag');
+      return [{
+        stand: AZ.fmtDate(d),
+        woche_label: `KW ${wk.w} (${AZ.fmtShort(wk.monday)}–${AZ.fmtShort(d)})`,
+        woche_ist: sum((r) => r.datum >= mon && r.datum <= last && !['10030', '10020'].includes(r.projekt)),
+        monat_label: AZ.fmtMonth(AZ.parse(ym + '-01')),
+        monat_ist: sum((r) => r.datum.startsWith(ym) && !['10030', '10020'].includes(r.projekt)),
+        offen_stunden: d3.sum(offen, (r) => +r.stunden),
+        offen_tage: new Set(offenAlle.map((r) => r.datum)).size,
+        offen_ab: offenAlle.length ? AZ.fmtDate(AZ.parse(d3.min(offenAlle, (r) => r.datum))) : '–',
+        jahr: y,
+        urlaub_tage: sum((r) => r.datum.startsWith(y) && r.projekt === '10030') / 8,
+        krank_tage: sum((r) => r.datum.startsWith(y) && r.projekt === '10020') / 8
+      }];
+    }
+  });
+
+  dash.calc('woche', {
+    title: 'Buchungen der letzten Woche',
+    description: 'Alle Zeilen der letzten Kalenderwoche mit Daten.',
+    inputs: ['zeiten'],
+    fn: (zeiten) => {
+      if (!zeiten.length) return [];
+      const last = d3.max(zeiten, (r) => r.datum); const mon = d3.utcFormat('%Y-%m-%d')(AZ.isoWeek(AZ.parse(last)).monday);
+      return zeiten.filter((r) => r.datum >= mon).map((r, i) => ({ key: `${r.datum}-${i}`, datum: r.datum, taetigkeit: r.taetigkeit, stunden: +r.stunden, beschreibung: r.beschreibung, status: r.status }));
+    }
+  });
+
+  dash.calc('monthly', {
+    title: 'Stunden pro Monat',
+    description: 'Summe je Monat und Tätigkeit; Status "gebucht", sobald alle Tage des Monats in MONI stehen.',
+    inputs: ['zeiten'],
+    fn: (zeiten) => {
+      const col = { '19426': 'pm', '10441': 'mt', '10469': 'vt', '10442': 'cs', '10030': 'urlaub', '10020': 'krank' };
+      const m = new Map();
+      for (const r of zeiten) {
+        const k = r.datum.slice(0, 7);
+        const o = m.get(k) || { monat: k, pm: 0, mt: 0, vt: 0, cs: 0, urlaub: 0, krank: 0, summe: 0, _g: 0, _v: 0 };
+        const c = col[r.projekt] || 'pm'; o[c] += +r.stunden; o.summe += +r.stunden;
+        if (r.status === 'gebucht') o._g++; else o._v++;
+        m.set(k, o);
+      }
+      return [...m.values()].sort((a, b) => a.monat < b.monat ? 1 : -1)
+        .map(({ _g, _v, ...o }) => ({ ...o, status: _v === 0 ? 'gebucht' : _g === 0 ? 'offen' : 'teilweise' }));
+    }
+  });
+
+  dash.calc('kunden', {
+    title: 'Kundentermine',
+    description: 'Zeilen mit erkanntem Kunden: Anzahl, Stunden, letztes Datum.',
+    inputs: ['zeiten'],
+    fn: (zeiten) => {
+      const m = new Map();
+      for (const r of zeiten.filter((r) => r.kunde)) {
+        const o = m.get(r.kunde) || { kunde: r.kunde, termine: 0, stunden: 0, letzter: '' };
+        o.termine++; o.stunden += +r.stunden; if (r.datum > o.letzter) o.letzter = r.datum; m.set(r.kunde, o);
+      }
+      return [...m.values()].sort((a, b) => a.letzter < b.letzter ? 1 : -1);
+    }
+  });
+</script>
+
+<script>
+  const azText = (name, field, fmt) => dash.draw(name, (el) => {
+    const k = dash.data('kpi');
+    if (k.status !== 'ok' || !k.data || !k.data.length) { el.textContent = '—'; return; }
+    const v = k.data[0][field]; el.textContent = fmt ? fmt(v) : v;
+  });
+  azText('stand', 'stand'); azText('offenTage', 'offen_tage'); azText('offenAb', 'offen_ab');
+  azText('wocheIst', 'woche_ist', AZ.num); azText('wocheLabel', 'woche_label');
+  azText('monatIst', 'monat_ist', AZ.num); azText('monatLabel', 'monat_label');
+  azText('offenStd', 'offen_stunden', AZ.num); azText('jahr', 'jahr');
+  azText('urlaub', 'urlaub_tage', AZ.num); azText('krank', 'krank_tage', AZ.num);
+
+  document.querySelectorAll('.az-legend i').forEach((i, n) => { i.style.background = dash.colors[n % dash.colors.length]; });
+  for (const b of document.querySelectorAll('.az-toggle button')) {
+    b.addEventListener('click', () => {
+      AZ.preset = b.dataset.preset; AZ.presetSeq++;
+      for (const o of document.querySelectorAll('.az-toggle button')) o.classList.toggle('az-on', o === b);
+      dash.draw('wochenChart');
+    });
+  }
+
+  dash.draw('wochenChart', {
+    mount(el) {
+      const H = 300, m = { t: 10, r: 8, b: 26, l: 34 };
+      const ids = AZ.acts.map((a) => a[0]); const names = new Map(AZ.acts);
+      const msg = document.createElement('p'); msg.className = 'az-sub'; msg.hidden = true; el.append(msg);
+      const svg = d3.select(el).append('svg').attr('width', '100%').attr('height', H)
+        .attr('role', 'img').attr('aria-label', 'Gestapelte Balken: Stunden nach Tätigkeit, verschiebbar und zoombar bis auf einzelne Tage');
+      const clipId = 'az-clip-' + Math.random().toString(36).slice(2);
+      const clip = svg.append('defs').append('clipPath').attr('id', clipId).append('rect');
+      const gY = svg.append('g');
+      const gBars = svg.append('g').attr('clip-path', `url(#${clipId})`);
+      const ref = svg.append('line').style('stroke', 'var(--cds-chart-reference)').style('stroke-dasharray', '4 3');
+      const gX = svg.append('g');
+      const overlay = svg.append('rect').style('fill', 'transparent').style('cursor', 'grab').style('touch-action', 'pan-y');
+      const tip = document.createElement('div'); tip.className = 'az-tip'; tip.hidden = true; el.append(tip);
+      const st = { H, m, ids, names, msg, svg, clip, gY, gBars, ref, gX, overlay, tip, t: d3.zoomIdentity, seq: 0, render: null };
+      st.zoom = d3.zoom()
+        .filter((ev) => ev.type === 'wheel' ? Math.abs(ev.deltaY) >= Math.abs(ev.deltaX) : (!ev.ctrlKey && !ev.button))
+        .on('start', () => { tip.hidden = true; overlay.style('cursor', 'grabbing'); })
+        .on('end', () => overlay.style('cursor', 'grab'))
+        .on('zoom', (ev) => {
+          st.t = ev.transform;
+          if (ev.sourceEvent) document.querySelectorAll('.az-toggle button').forEach((b) => b.classList.remove('az-on'));
+          if (st.render) st.render();
+        });
+      overlay.call(st.zoom).on('dblclick.zoom', null);
+      overlay.on('wheel.pan', (ev) => {
+        if (Math.abs(ev.deltaX) > Math.abs(ev.deltaY)) { ev.preventDefault(); st.zoom.translateBy(overlay, -ev.deltaX / st.t.k, 0); }
+      });
+      overlay.on('pointermove.tip', (ev) => {
+        if (!st.x || ev.buttons) return;
+        const [sx] = d3.pointer(ev, svg.node()); const dt = st.x.invert(sx);
+        const r = (st.arr || []).find((o) => o.start <= dt && dt < o.end);
+        if (!r) { tip.hidden = true; return; }
+        tip.replaceChildren();
+        const b = document.createElement('b'); b.textContent = `${r.label} · ${AZ.num(d3.sum(ids, (id) => r[id]))} h${r.vorschlag ? ' (Vorschlag)' : ''}`; tip.append(b);
+        for (const id of ids) if (r[id]) { const s = document.createElement('div'); s.textContent = `${names.get(id)}: ${AZ.num(r[id])} h`; tip.append(s); }
+        tip.hidden = false;
+        const [px, py] = d3.pointer(ev, el);
+        tip.style.left = Math.max(0, Math.min(px + 12, el.clientWidth - tip.offsetWidth - 4)) + 'px';
+        tip.style.top = Math.max(0, py - tip.offsetHeight - 8) + 'px';
+      }).on('pointerleave.tip', () => { tip.hidden = true; });
+      return st;
+    },
+    update(el, st) {
+      const dd = dash.data('daily'), ww = dash.data('weekly');
+      const bad = [dd, ww].find((s) => s.status !== 'ok');
+      if (bad || !dd.data.length || !ww.data.length) {
+        st.svg.style('display', 'none'); st.msg.hidden = false; st.render = null; st.tip.hidden = true;
+        st.msg.textContent = bad && bad.status === 'error' ? 'Konnte nicht geladen werden' : '—';
+        return;
+      }
+      st.svg.style('display', null); st.msg.hidden = true;
+      const { ids, H, m } = st; const day = d3.utcDay;
+      const bucket = (start, end, label) => { const o = { start, end, label, vorschlag: false }; for (const id of ids) o[id] = 0; return o; };
+      const add = (o, r) => { o[ids.includes(r.projekt) ? r.projekt : '19426'] += r.stunden; if (r.status === 'vorschlag') o.vorschlag = true; };
+      const D = new Map();
+      for (const r of dd.data) { let o = D.get(r.datum); if (!o) { const s = AZ.parse(r.datum); o = bucket(s, day.offset(s, 1), AZ.locale.utcFormat('%a %d.%m.%Y')(s)); D.set(r.datum, o); } add(o, r); }
+      const Wk = new Map();
+      for (const r of ww.data) { let o = Wk.get(r.montag); if (!o) { const s = AZ.parse(r.montag); o = bucket(s, day.offset(s, 7), `KW ${+r.woche.slice(-2)}/${r.woche.slice(0, 4)} (ab ${AZ.fmtShort(s)})`); Wk.set(r.montag, o); } add(o, r); }
+      const daysArr = [...D.values()].sort((a, b) => a.start - b.start);
+      const weeksArr = [...Wk.values()].sort((a, b) => a.start - b.start);
+      const W = el.clientWidth || 600;
+      const lo = weeksArr[0].start, hi = day.offset(daysArr[daysArr.length - 1].start, 1);
+      const x0 = d3.scaleUtc().domain([lo, hi]).range([m.l, W - m.r]);
+      st.svg.attr('viewBox', `0 0 ${W} ${H}`);
+      st.clip.attr('x', m.l).attr('y', 0).attr('width', Math.max(0, W - m.l - m.r)).attr('height', H);
+      st.overlay.attr('x', m.l).attr('y', m.t).attr('width', Math.max(0, W - m.l - m.r)).attr('height', H - m.b - m.t);
+      st.zoom.scaleExtent([1, Math.max(1, (hi - lo) / 864e5 / 7)])
+        .extent([[m.l, 0], [W - m.r, H]]).translateExtent([[m.l, 0], [W - m.r, H]]);
+      const stackF = d3.stack().keys(ids);
+      st.render = () => {
+        const x = st.t.rescaleX(x0); const [a, b] = x.domain(); const vis = (b - a) / 864e5;
+        const mode = vis <= 70 ? 'day' : 'week';
+        const arr = (mode === 'day' ? daysArr : weeksArr).filter((r) => r.end > a && r.start < b);
+        st.x = x; st.arr = arr;
+        const ymax = Math.max(mode === 'day' ? 10 : 50, d3.max(arr, (r) => d3.sum(ids, (id) => r[id])) || 0);
+        const y = d3.scaleLinear().domain([0, ymax]).nice().range([H - m.b, m.t]);
+        st.gY.attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickSize(-(W - m.l - m.r)))
+          .call((g) => g.select('.domain').remove()).call((g) => g.selectAll('.tick line').style('stroke', 'var(--cds-chart-grid)'));
+        const soll = mode === 'day' ? 8 : 40;
+        st.ref.attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(soll)).attr('y2', y(soll));
+        const fmt = vis > 400 ? AZ.fmtTick : mode === 'day' && vis <= 21 ? AZ.locale.utcFormat('%a %d.') : AZ.fmtShort;
+        st.gX.attr('transform', `translate(0,${H - m.b})`)
+          .call(d3.axisBottom(x).ticks(Math.max(2, Math.floor((W - m.l) / 80))).tickFormat(fmt).tickSizeOuter(0));
+        st.gBars.selectAll('g').data(stackF(arr)).join('g').style('fill', (s, i) => dash.colors[i % dash.colors.length])
+          .selectAll('rect').data((s) => s).join('rect')
+          .attr('x', (d) => { const w = x(d.data.end) - x(d.data.start); return x(d.data.start) + w * 0.1; })
+          .attr('width', (d) => Math.max(0.5, (x(d.data.end) - x(d.data.start)) * 0.8))
+          .attr('y', (d) => y(d[1])).attr('height', (d) => Math.max(0, y(d[0]) - y(d[1])))
+          .style('opacity', (d) => d.data.vorschlag ? 0.45 : 1);
+      };
+      if (st.seq !== AZ.presetSeq) {
+        st.seq = AZ.presetSeq;
+        const start = AZ.preset === 'all' ? lo : day.offset(hi, AZ.preset === 'd28' ? -28 : -26 * 7);
+        const s0 = start < lo ? lo : start;
+        const k = (W - m.l - m.r) / (x0(hi) - x0(s0));
+        st.overlay.call(st.zoom.transform, d3.zoomIdentity.translate(m.l - k * x0(s0), 0).scale(k));
+      } else st.render();
+    }
+  });
+
+  dash.draw('wocheRows', (tb) => {
+    const s = dash.data('woche'); tb.replaceChildren();
+    if (s.status !== 'ok' || !s.data) return;
+    for (const r of s.data) {
+      const tr = document.createElement('tr'); tr.dataset.key = encodeURIComponent(r.key);
+      const cells = [AZ.fmtDay(AZ.parse(r.datum)), r.taetigkeit, AZ.num(r.stunden), r.beschreibung];
+      cells.forEach((c, i) => { const td = document.createElement('td'); td.textContent = c; if (i === 1) td.className = 'az-l'; if (i === 3) td.className = 'az-desc'; tr.append(td); });
+      tb.append(tr);
+    }
+  });
+
+  dash.draw('monatRows', (tb) => {
+    const s = dash.data('monthly'); tb.replaceChildren();
+    if (s.status !== 'ok' || !s.data) return;
+    for (const r of s.data) {
+      const tr = document.createElement('tr'); tr.dataset.key = r.monat;
+      const td0 = document.createElement('td'); td0.textContent = AZ.fmtMonth(AZ.parse(r.monat + '-01')); tr.append(td0);
+      const td1 = document.createElement('td'); td1.className = 'az-l';
+      const b = document.createElement('span'); b.className = 'az-badge' + (r.status === 'gebucht' ? '' : ' az-open'); b.textContent = r.status; td1.append(b); tr.append(td1);
+      for (const f of ['pm', 'mt', 'vt', 'cs', 'urlaub', 'krank', 'summe']) { const td = document.createElement('td'); td.textContent = r[f] ? AZ.num(r[f]) : '–'; tr.append(td); }
+      tb.append(tr);
+    }
+  });
+
+  dash.draw('kundenRows', (tb) => {
+    const s = dash.data('kunden'); tb.replaceChildren();
+    if (s.status !== 'ok' || !s.data) return;
+    for (const r of s.data) {
+      const tr = document.createElement('tr'); tr.dataset.key = encodeURIComponent(r.kunde);
+      [r.kunde, String(r.termine), AZ.num(r.stunden), AZ.fmtDate(AZ.parse(r.letzter))].forEach((c) => { const td = document.createElement('td'); td.textContent = c; tr.append(td); });
+      tb.append(tr);
+    }
+  });
+</script>

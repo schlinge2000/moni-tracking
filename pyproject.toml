@@ -1,0 +1,9 @@
+[project]
+name = "moni-tracking"
+version = "0.1.0"
+description = "Zeittracking: Outlook + Wiki -> MONI / Monlist / Odoo"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.uv]
+package = false

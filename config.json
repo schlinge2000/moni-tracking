@@ -1,0 +1,7 @@
+{
+  "_hinweis": "Steuert export_moni.py. moni_ziel_ordner: Windows-Pfad oder relativ zum MONI-Ordner. dateiname: Platzhalter {jahr}, {monat}, {kw}. MONI.exe selbst liest {jahr}_{monat:02d}.md (ein File pro Monat).",
+  "moni_ziel_ordner": "Daten",
+  "dateiname": "{jahr}_{monat:02d}.md",
+  "ab_datum": "2026-04-11",
+  "vorhandene_tage_ueberschreiben": false
+}
